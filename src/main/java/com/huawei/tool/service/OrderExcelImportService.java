@@ -7,6 +7,7 @@ import com.huawei.tool.dao.model.DetailRow;
 import com.huawei.tool.dao.model.OrderRow;
 import org.apache.poi.ss.usermodel.Cell;
 import org.apache.poi.ss.usermodel.DataFormatter;
+import org.apache.poi.ss.usermodel.FormulaEvaluator;
 import org.apache.poi.ss.usermodel.Row;
 import org.apache.poi.ss.usermodel.Sheet;
 import org.apache.poi.ss.usermodel.Workbook;
@@ -30,6 +31,8 @@ import java.util.UUID;
 public class OrderExcelImportService {
 
     private static final DataFormatter FORMATTER = new DataFormatter();
+    /** 单次导入内对公式单元格求值，与 {@link CostExcelImportService} 行为一致。 */
+    private static final ThreadLocal<FormulaEvaluator> CELL_EVAL = new ThreadLocal<>();
 
     private final ExcelMappingProperties mappingProperties;
     private final OrderInfoDao orderInfoDao;
@@ -48,16 +51,22 @@ public class OrderExcelImportService {
     public void importFromPath(String taskId, Path path) throws Exception {
         try (InputStream in = Files.newInputStream(path);
                 Workbook wb = WorkbookFactory.create(in)) {
-            List<String> oneSheetNames = mappingProperties.getOrder().getOrderDataSheetNames();
-            if (oneSheetNames == null || oneSheetNames.isEmpty()) {
-                throw new IllegalArgumentException(
-                        "未配置订单 Sheet 名：请在 excel.order.order-data-sheet-names 中至少填写一个与工作簿标签一致的名称。");
+            FormulaEvaluator evaluator = wb.getCreationHelper().createFormulaEvaluator();
+            CELL_EVAL.set(evaluator);
+            try {
+                List<String> oneSheetNames = mappingProperties.getOrder().getOrderDataSheetNames();
+                if (oneSheetNames == null || oneSheetNames.isEmpty()) {
+                    throw new IllegalArgumentException(
+                            "未配置订单 Sheet 名：请在 excel.order.order-data-sheet-names 中至少填写一个与工作簿标签一致的名称。");
+                }
+                Sheet sheet = findSheet(wb, oneSheetNames);
+                if (sheet == null) {
+                    throw new IllegalArgumentException("未找到订单数据 Sheet，名称需为配置之一: " + oneSheetNames);
+                }
+                importCombinedSingleSheet(taskId, sheet);
+            } finally {
+                CELL_EVAL.remove();
             }
-            Sheet sheet = findSheet(wb, oneSheetNames);
-            if (sheet == null) {
-                throw new IllegalArgumentException("未找到订单数据 Sheet，名称需为配置之一: " + oneSheetNames);
-            }
-            importCombinedSingleSheet(taskId, sheet);
         }
     }
 
@@ -287,7 +296,8 @@ public class OrderExcelImportService {
         if (cell == null) {
             return null;
         }
-        String t = FORMATTER.formatCellValue(cell).trim();
+        FormulaEvaluator ev = CELL_EVAL.get();
+        String t = (ev != null ? FORMATTER.formatCellValue(cell, ev) : FORMATTER.formatCellValue(cell)).trim();
         return t.isEmpty() ? null : t;
     }
 

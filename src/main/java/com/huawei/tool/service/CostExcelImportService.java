@@ -5,6 +5,7 @@ import com.huawei.tool.dao.ProductCostDao;
 import com.huawei.tool.dao.model.CostRow;
 import org.apache.poi.ss.usermodel.Cell;
 import org.apache.poi.ss.usermodel.DataFormatter;
+import org.apache.poi.ss.usermodel.FormulaEvaluator;
 import org.apache.poi.ss.usermodel.Row;
 import org.apache.poi.ss.usermodel.Sheet;
 import org.apache.poi.ss.usermodel.Workbook;
@@ -28,6 +29,8 @@ import java.util.regex.Pattern;
 public class CostExcelImportService {
 
     private static final DataFormatter FORMATTER = new DataFormatter();
+    /** 单次导入内对公式单元格求值；无 evaluator 时 {@link DataFormatter} 常把公式格格式化为「$F3」等文本。 */
+    private static final ThreadLocal<FormulaEvaluator> CELL_EVAL = new ThreadLocal<>();
     private static final Pattern MONTH_HEADER = Pattern.compile("^\\s*(\\d{1,2})\\s*月\\s*$");
 
     private final ExcelMappingProperties mappingProperties;
@@ -42,20 +45,26 @@ public class CostExcelImportService {
         CostImportResult result = new CostImportResult();
         try (InputStream in = Files.newInputStream(path);
                 Workbook wb = WorkbookFactory.create(in)) {
-            Sheet sheet = findSheet(wb, mappingProperties.getCost().getSheetNames());
-            if (sheet == null) {
-                throw new IllegalArgumentException("未找到成本 Sheet，请使用: " + mappingProperties.getCost().getSheetNames());
-            }
-            int firstRow = sheet.getFirstRowNum();
-            Row header0 = sheet.getRow(firstRow);
-            Map<String, Integer> flatHeader = headerIndex(header0);
-            boolean flatPsp = flatHeader.containsKey("PSP成本-1月");
+            FormulaEvaluator evaluator = wb.getCreationHelper().createFormulaEvaluator();
+            CELL_EVAL.set(evaluator);
+            try {
+                Sheet sheet = findSheet(wb, mappingProperties.getCost().getSheetNames());
+                if (sheet == null) {
+                    throw new IllegalArgumentException("未找到成本 Sheet，请使用: " + mappingProperties.getCost().getSheetNames());
+                }
+                int firstRow = sheet.getFirstRowNum();
+                Row header0 = sheet.getRow(firstRow);
+                Map<String, Integer> flatHeader = headerIndex(header0);
+                boolean flatPsp = flatHeader.containsKey("PSP成本-1月");
 
-            if (!flatPsp && isMergedTwoRowCostHeader(sheet, firstRow)) {
-                MergedCostColumns merged = buildMergedCostColumns(sheet, firstRow);
-                importMergedDataRows(sheet, merged, result);
-            } else {
-                importLegacyFlatHeader(sheet, firstRow, flatHeader, result);
+                if (!flatPsp && isMergedTwoRowCostHeader(sheet, firstRow)) {
+                    MergedCostColumns merged = buildMergedCostColumns(sheet, firstRow);
+                    importMergedDataRows(sheet, merged, result);
+                } else {
+                    importLegacyFlatHeader(sheet, firstRow, flatHeader, result);
+                }
+            } finally {
+                CELL_EVAL.remove();
             }
         }
         return result;
@@ -526,7 +535,8 @@ public class CostExcelImportService {
         if (cell == null) {
             return null;
         }
-        String t = FORMATTER.formatCellValue(cell).trim();
+        FormulaEvaluator ev = CELL_EVAL.get();
+        String t = (ev != null ? FORMATTER.formatCellValue(cell, ev) : FORMATTER.formatCellValue(cell)).trim();
         return t.isEmpty() ? null : t;
     }
 
