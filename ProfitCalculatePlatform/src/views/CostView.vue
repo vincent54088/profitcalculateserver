@@ -1,14 +1,23 @@
 <template>
   <div class="cost-page">
     <div class="cost-page__toolbar">
-      <el-button type="primary" @click="dlg = true">更新</el-button>
-      <el-button @click="loadTable">刷新列表</el-button>
+      <div class="cost-page__toolbar-left">
+        <el-button v-if="!showHelpAlert" link type="primary" @click="showHelpAlert = true">显示说明</el-button>
+        <el-button v-if="result && !resultPanelVisible" link type="primary" @click="resultPanelVisible = true">显示导入结果</el-button>
+      </div>
+      <div class="cost-page__toolbar-actions">
+        <el-button type="primary" @click="dlg = true">更新</el-button>
+        <el-button @click="loadTable">刷新列表</el-button>
+      </div>
     </div>
     <el-alert
+      v-if="showHelpAlert"
       type="info"
       show-icon
+      closable
       title="说明"
       description="上传设备成本 Excel，按「编码」与 device_id 对应，存在则更新、不存在则插入。支持单行扁平表头（PSP成本-1月…），或双行合并表头（首行 PSP成本/标准成本分组，次行为「N月」列）。下方表格为库中当前数据；双击表格行可在线编辑并保存（与 Excel 导入同为按编码 upsert）。"
+      @close="showHelpAlert = false"
     />
 
     <el-dialog v-model="dlg" title="上传成本 Excel" width="520px" align-center destroy-on-close>
@@ -21,7 +30,13 @@
       </template>
     </el-dialog>
 
-    <el-card v-if="result" class="cost-page__result">
+    <el-card v-if="result && resultPanelVisible" class="cost-page__result">
+      <template #header>
+        <div class="cost-page__result-head">
+          <span>导入结果</span>
+          <el-button link type="primary" @click="resultPanelVisible = false">隐藏</el-button>
+        </div>
+      </template>
       <div>成功行数: {{ result.successCount }}</div>
       <div>失败行数: {{ result.failCount }}</div>
       <div v-if="result.errors?.length" class="cost-page__errors">
@@ -211,6 +226,8 @@ const dlg = ref(false)
 const file = ref<File | null>(null)
 const uploading = ref(false)
 const result = ref<{ successCount: number; failCount: number; errors: string[] } | null>(null)
+const showHelpAlert = ref(true)
+const resultPanelVisible = ref(false)
 
 const items = ref<CostRowItem[]>([])
 const total = ref(0)
@@ -282,6 +299,7 @@ async function doUpload() {
     fd.append('file', file.value)
     const { data } = await client.post('/product-costs/upload', fd, { headers: { 'Content-Type': 'multipart/form-data' } })
     result.value = data
+    resultPanelVisible.value = true
     ElMessage.success('导入完成')
     dlg.value = false
     page.value = 1
@@ -345,18 +363,35 @@ onMounted(() => {
 
 .cost-page__toolbar {
   display: flex;
-  justify-content: flex-end;
+  justify-content: space-between;
+  align-items: center;
   gap: 8px;
   margin-bottom: 12px;
+}
+
+.cost-page__toolbar-actions {
+  display: flex;
+  gap: 8px;
 }
 
 .cost-page__result {
   margin-top: 12px;
 }
 
+.cost-page__result-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+}
+
 .cost-page__errors {
   margin-top: 8px;
   font-size: 12px;
+  max-height: 200px;
+  overflow-y: auto;
+  padding-right: 4px;
+  line-height: 1.45;
 }
 
 .cost-page__table-wrap {
