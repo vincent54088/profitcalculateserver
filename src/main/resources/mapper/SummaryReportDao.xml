@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "https://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.huawei.tool.dao.SummaryReportDao">
+
+    <delete id="deleteByTask">
+        DELETE FROM t_summary_report WHERE task_id = #{taskId}
+    </delete>
+
+    <insert id="batchInsert">
+        INSERT INTO t_summary_report (
+            task_id, order_id, income_month, area, representative_office, country, accounts, project, po_id, gross_profit,
+            hw_psp_gross_profit, hw_standard_gross_profit, before_total_price, after_total_price, total_price_increase,
+            software_history_price, software_price, software_price_increase_rate
+        ) VALUES
+        <foreach collection="rows" item="r" separator=",">
+            (
+            #{r.taskId}, #{r.orderId}, #{r.incomeMonth}, #{r.area}, #{r.representativeOffice}, #{r.country}, #{r.accounts}, #{r.project}, #{r.poId}, #{r.grossProfit},
+            #{r.hwPspGrossProfit}, #{r.hwStandardGrossProfit}, #{r.beforeTotalPrice}, #{r.afterTotalPrice}, #{r.totalPriceIncrease},
+            #{r.softwareHistoryPrice}, #{r.softwarePrice}, #{r.softwarePriceIncreaseRate}
+            )
+        </foreach>
+    </insert>
+
+    <select id="findPage" resultType="com.huawei.tool.dao.model.SummaryRow">
+        SELECT * FROM t_summary_report WHERE task_id = #{taskId} ORDER BY order_id, income_month LIMIT #{limit} OFFSET #{offset}
+    </select>
+
+    <select id="countByTask" resultType="long">
+        SELECT COUNT(*) FROM t_summary_report WHERE task_id = #{taskId}
+    </select>
+
+    <select id="findAllByTask" resultType="com.huawei.tool.dao.model.SummaryRow">
+        SELECT * FROM t_summary_report WHERE task_id = #{taskId} ORDER BY order_id, income_month
+    </select>
+</mapper>

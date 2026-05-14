@@ -1,0 +1,77 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "https://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.huawei.tool.dao.ProductCostDao">
+
+    <resultMap id="CostRowMap" type="com.huawei.tool.dao.model.CostRow">
+        <id column="device_id" property="deviceId"/>
+        <result column="description" property="description"/>
+        <result column="device_type" property="deviceType"/>
+        <result column="currency" property="currency"/>
+        <result column="psp_m01_cost" property="pspM01"/>
+        <result column="psp_m02_cost" property="pspM02"/>
+        <result column="psp_m03_cost" property="pspM03"/>
+        <result column="psp_m04_cost" property="pspM04"/>
+        <result column="psp_m05_cost" property="pspM05"/>
+        <result column="psp_m06_cost" property="pspM06"/>
+        <result column="psp_m07_cost" property="pspM07"/>
+        <result column="psp_m08_cost" property="pspM08"/>
+        <result column="psp_m09_cost" property="pspM09"/>
+        <result column="psp_m10_cost" property="pspM10"/>
+        <result column="psp_m11_cost" property="pspM11"/>
+        <result column="psp_m12_cost" property="pspM12"/>
+        <result column="std_m01_cost" property="stdM01"/>
+        <result column="std_m02_cost" property="stdM02"/>
+        <result column="std_m03_cost" property="stdM03"/>
+        <result column="std_m04_cost" property="stdM04"/>
+        <result column="std_m05_cost" property="stdM05"/>
+        <result column="std_m06_cost" property="stdM06"/>
+        <result column="std_m07_cost" property="stdM07"/>
+        <result column="std_m08_cost" property="stdM08"/>
+        <result column="std_m09_cost" property="stdM09"/>
+        <result column="std_m10_cost" property="stdM10"/>
+        <result column="std_m11_cost" property="stdM11"/>
+        <result column="std_m12_cost" property="stdM12"/>
+        <result column="addition_info" property="additionInfo"/>
+    </resultMap>
+
+    <select id="selectAll" resultMap="CostRowMap">
+        SELECT * FROM t_product_cost_price
+    </select>
+
+    <select id="countAll" resultType="long">
+        SELECT COUNT(*) FROM t_product_cost_price
+    </select>
+
+    <select id="selectPage" resultMap="CostRowMap">
+        SELECT * FROM t_product_cost_price
+        ORDER BY device_id
+        LIMIT #{limit} OFFSET #{offset}
+    </select>
+
+    <select id="selectByDeviceId" resultMap="CostRowMap">
+        SELECT * FROM t_product_cost_price WHERE device_id = #{deviceId}
+    </select>
+
+    <insert id="upsert">
+        INSERT INTO t_product_cost_price (
+            device_id, description, device_type, currency,
+            psp_m01_cost, psp_m02_cost, psp_m03_cost, psp_m04_cost, psp_m05_cost, psp_m06_cost, psp_m07_cost, psp_m08_cost, psp_m09_cost, psp_m10_cost, psp_m11_cost, psp_m12_cost,
+            std_m01_cost, std_m02_cost, std_m03_cost, std_m04_cost, std_m05_cost, std_m06_cost, std_m07_cost, std_m08_cost, std_m09_cost, std_m10_cost, std_m11_cost, std_m12_cost,
+            addition_info
+        ) VALUES (
+            #{deviceId}, #{description}, #{deviceType}, #{currency},
+            #{pspM01}, #{pspM02}, #{pspM03}, #{pspM04}, #{pspM05}, #{pspM06}, #{pspM07}, #{pspM08}, #{pspM09}, #{pspM10}, #{pspM11}, #{pspM12},
+            #{stdM01}, #{stdM02}, #{stdM03}, #{stdM04}, #{stdM05}, #{stdM06}, #{stdM07}, #{stdM08}, #{stdM09}, #{stdM10}, #{stdM11}, #{stdM12},
+            #{additionInfo}
+        )
+        ON DUPLICATE KEY UPDATE
+            description = VALUES(description), device_type = VALUES(device_type), currency = VALUES(currency),
+            psp_m01_cost = VALUES(psp_m01_cost), psp_m02_cost = VALUES(psp_m02_cost), psp_m03_cost = VALUES(psp_m03_cost), psp_m04_cost = VALUES(psp_m04_cost),
+            psp_m05_cost = VALUES(psp_m05_cost), psp_m06_cost = VALUES(psp_m06_cost), psp_m07_cost = VALUES(psp_m07_cost), psp_m08_cost = VALUES(psp_m08_cost),
+            psp_m09_cost = VALUES(psp_m09_cost), psp_m10_cost = VALUES(psp_m10_cost), psp_m11_cost = VALUES(psp_m11_cost), psp_m12_cost = VALUES(psp_m12_cost),
+            std_m01_cost = VALUES(std_m01_cost), std_m02_cost = VALUES(std_m02_cost), std_m03_cost = VALUES(std_m03_cost), std_m04_cost = VALUES(std_m04_cost),
+            std_m05_cost = VALUES(std_m05_cost), std_m06_cost = VALUES(std_m06_cost), std_m07_cost = VALUES(std_m07_cost), std_m08_cost = VALUES(std_m08_cost),
+            std_m09_cost = VALUES(std_m09_cost), std_m10_cost = VALUES(std_m10_cost), std_m11_cost = VALUES(std_m11_cost), std_m12_cost = VALUES(std_m12_cost),
+            addition_info = VALUES(addition_info)
+    </insert>
+</mapper>

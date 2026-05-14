@@ -1,0 +1,84 @@
+excel:
+  order:
+    # 单 Sheet：一个工作表里每一行同时包含「订单头」+「产品明细」列，
+    # 上传后解析为同一任务下的 t_order_info 与 t_order_product_detail_data。
+    # 固定双行表头：第 1 行为分组/合并标题（不参与列名），第 2 行为列名行（须含「合同号」），数据从第 3 行起；
+    # 若明细续行未单独填写合同号（纵向合并导出），将沿用上一行的合同号。
+    # 下列名称按顺序匹配工作簿中的 Sheet 名，命中第一个即使用该表（须至少配置一项）。
+    order-data-sheet-names:
+      - "01-发货信息表"
+      - Sheet1
+    order-column-map:
+      合同号: order_id
+      区域: area
+      代表处: representative_office
+      国家: country
+      客户群: accounts
+      项目: project
+      "PO号": po_id
+      销毛: gross_profit
+    detail-column-map:
+      合同号: order_id
+      型号: device_type
+      编码: device_id
+      编码描述: description
+      软硬件分类: category_type
+      硬件类型: hardware_type
+      使用场景: scene
+      数量: device_count
+      预计收入触发时间: income_month
+      币种: currency
+      目录价: list_price
+      提价前-价位: before_tier
+      提价前-价格: before_price
+      优惠说明(前): discount_desc_before
+      提价后-价位: after_tier
+      提价后-价格: after_price
+      优惠说明(后): discount_desc_after
+      价位提价: tier_increase
+      价格提价: price_increase
+      提价后-价位折扣率: after_tier_discount_rate
+      提价后-价格折扣率: after_price_discount_rate
+      提价前-总价: before_total_price
+      提价后-总价: after_total_price
+      总价上涨: total_price_increase
+      涨价%: total_increase_rate
+      备注: addition_info
+  cost:
+    # 设备成本表所在 Sheet 名称（顺序匹配）
+    sheet-names:
+      - Sheet1
+      - 成本
+    # 扁平表头（单行）：列名须与下列 key 完全一致，例如「PSP成本-1月」。
+    # 若首行无「PSP成本-1月」且第二行为「1月」…「12月」样式，则自动按双行合并表头解析：
+    # 纵向合并的编码/编码描述/型号/币种/备注 + 横向合并的「PSP成本」「标准成本」+ 其下月份列，映射到 t_product_cost_price 各月字段。
+    column-map:
+      编码: device_id
+      编码描述: description
+      型号: device_type
+      币种: currency
+      PSP成本-1月: psp_m01_cost
+      PSP成本-2月: psp_m02_cost
+      PSP成本-3月: psp_m03_cost
+      PSP成本-4月: psp_m04_cost
+      PSP成本-5月: psp_m05_cost
+      PSP成本-6月: psp_m06_cost
+      PSP成本-7月: psp_m07_cost
+      PSP成本-8月: psp_m08_cost
+      PSP成本-9月: psp_m09_cost
+      PSP成本-10月: psp_m10_cost
+      PSP成本-11月: psp_m11_cost
+      PSP成本-12月: psp_m12_cost
+      标准成本-1月: std_m01_cost
+      标准成本-2月: std_m02_cost
+      标准成本-3月: std_m03_cost
+      标准成本-4月: std_m04_cost
+      标准成本-5月: std_m05_cost
+      标准成本-6月: std_m06_cost
+      标准成本-7月: std_m07_cost
+      标准成本-8月: std_m08_cost
+      标准成本-9月: std_m09_cost
+      标准成本-10月: std_m10_cost
+      标准成本-11月: std_m11_cost
+      标准成本-12月: std_m12_cost
+      备注: addition_info

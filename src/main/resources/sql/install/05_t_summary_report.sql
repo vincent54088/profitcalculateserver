@@ -1,0 +1,22 @@
+CREATE TABLE IF NOT EXISTS t_summary_report (
+    task_id VARCHAR(64) NOT NULL,
+    order_id VARCHAR(255) NOT NULL,
+    income_month VARCHAR(64) NOT NULL,
+    area VARCHAR(64),
+    representative_office VARCHAR(64),
+    country VARCHAR(64),
+    accounts VARCHAR(64),
+    project VARCHAR(64),
+    po_id VARCHAR(255),
+    gross_profit DECIMAL(12,2),
+    hw_psp_gross_profit DECIMAL(7,4),
+    hw_standard_gross_profit DECIMAL(7,4),
+    before_total_price DECIMAL(12,2),
+    after_total_price DECIMAL(12,2),
+    total_price_increase DECIMAL(12,2),
+    software_history_price DECIMAL(12,2),
+    software_price DECIMAL(12,2),
+    software_price_increase_rate DECIMAL(7,4),
+    PRIMARY KEY (task_id, order_id, income_month),
+    CONSTRAINT fk_summary_task FOREIGN KEY (task_id) REFERENCES t_profit_calculation_task(task_id) ON DELETE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;

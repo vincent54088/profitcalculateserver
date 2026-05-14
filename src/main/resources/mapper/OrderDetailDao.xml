@@ -1,0 +1,473 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "https://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.huawei.tool.dao.OrderDetailDao">
+
+    <resultMap id="DetailRowResultMap" type="com.huawei.tool.dao.model.DetailRow">
+        <id column="id" property="id"/>
+        <result column="task_id" property="taskId"/>
+        <result column="order_id" property="orderId"/>
+        <result column="device_type" property="deviceType"/>
+        <result column="device_id" property="deviceId"/>
+        <result column="description" property="description"/>
+        <result column="category_type" property="categoryType"/>
+        <result column="hardware_type" property="hardwareType"/>
+        <result column="scene" property="scene"/>
+        <result column="device_count" property="deviceCount"/>
+        <result column="income_month" property="incomeMonth"/>
+        <result column="currency" property="currency"/>
+        <result column="list_price" property="listPrice"/>
+        <result column="before_tier" property="beforeTier"/>
+        <result column="before_price" property="beforePrice"/>
+        <result column="discount_desc_before" property="discountDescBefore"/>
+        <result column="after_tier" property="afterTier"/>
+        <result column="after_price" property="afterPrice"/>
+        <result column="discount_desc_after" property="discountDescAfter"/>
+        <result column="tier_increase" property="tierIncrease"/>
+        <result column="price_increase" property="priceIncrease"/>
+        <result column="after_tier_discount_rate" property="afterTierDiscountRate"/>
+        <result column="after_price_discount_rate" property="afterPriceDiscountRate"/>
+        <result column="before_total_price" property="beforeTotalPrice"/>
+        <result column="after_total_price" property="afterTotalPrice"/>
+        <result column="total_price_increase" property="totalPriceIncrease"/>
+        <result column="total_increase_rate" property="totalIncreaseRate"/>
+        <result column="addition_info" property="additionInfo"/>
+    </resultMap>
+
+    <resultMap id="OrderDetailPageItemMap" type="com.huawei.tool.dao.model.OrderDetailPageItem" extends="DetailRowResultMap">
+        <result column="area" property="area"/>
+        <result column="representative_office" property="representativeOffice"/>
+        <result column="country" property="country"/>
+        <result column="accounts" property="accounts"/>
+        <result column="project" property="project"/>
+        <result column="po_id" property="poId"/>
+        <result column="gross_profit" property="grossProfit"/>
+    </resultMap>
+
+    <insert id="batchInsert">
+        INSERT INTO t_order_product_detail_data (
+            id, task_id, order_id, device_type, device_id, description, category_type, hardware_type, scene, device_count, income_month, currency,
+            list_price, before_tier, before_price, discount_desc_before, after_tier, after_price, discount_desc_after,
+            tier_increase, price_increase, after_tier_discount_rate, after_price_discount_rate, before_total_price, after_total_price,
+            total_price_increase, total_increase_rate, addition_info
+        ) VALUES
+        <foreach collection="rows" item="r" separator=",">
+            (
+            #{r.id}, #{r.taskId}, #{r.orderId}, #{r.deviceType}, #{r.deviceId}, #{r.description}, #{r.categoryType}, #{r.hardwareType}, #{r.scene},
+            #{r.deviceCount}, #{r.incomeMonth}, #{r.currency}, #{r.listPrice}, #{r.beforeTier}, #{r.beforePrice}, #{r.discountDescBefore},
+            #{r.afterTier}, #{r.afterPrice}, #{r.discountDescAfter}, #{r.tierIncrease}, #{r.priceIncrease}, #{r.afterTierDiscountRate},
+            #{r.afterPriceDiscountRate}, #{r.beforeTotalPrice}, #{r.afterTotalPrice}, #{r.totalPriceIncrease}, #{r.totalIncreaseRate}, #{r.additionInfo}
+            )
+        </foreach>
+    </insert>
+
+    <sql id="detailKeywordFilter">
+        <if test="keyword != null and keyword != ''">
+            AND (
+            d.order_id LIKE CONCAT('%', #{keyword}, '%')
+            OR IFNULL(d.device_id, '') LIKE CONCAT('%', #{keyword}, '%')
+            OR IFNULL(d.device_type, '') LIKE CONCAT('%', #{keyword}, '%')
+            OR IFNULL(d.description, '') LIKE CONCAT('%', #{keyword}, '%')
+            OR IFNULL(d.category_type, '') LIKE CONCAT('%', #{keyword}, '%')
+            OR IFNULL(d.hardware_type, '') LIKE CONCAT('%', #{keyword}, '%')
+            OR IFNULL(d.scene, '') LIKE CONCAT('%', #{keyword}, '%')
+            OR IFNULL(d.income_month, '') LIKE CONCAT('%', #{keyword}, '%')
+            OR IFNULL(d.currency, '') LIKE CONCAT('%', #{keyword}, '%')
+            OR IFNULL(d.discount_desc_before, '') LIKE CONCAT('%', #{keyword}, '%')
+            OR IFNULL(d.discount_desc_after, '') LIKE CONCAT('%', #{keyword}, '%')
+            OR IFNULL(d.addition_info, '') LIKE CONCAT('%', #{keyword}, '%')
+            OR IFNULL(o.area, '') LIKE CONCAT('%', #{keyword}, '%')
+            OR IFNULL(o.representative_office, '') LIKE CONCAT('%', #{keyword}, '%')
+            OR IFNULL(o.country, '') LIKE CONCAT('%', #{keyword}, '%')
+            OR IFNULL(o.accounts, '') LIKE CONCAT('%', #{keyword}, '%')
+            OR IFNULL(o.project, '') LIKE CONCAT('%', #{keyword}, '%')
+            OR IFNULL(o.po_id, '') LIKE CONCAT('%', #{keyword}, '%')
+            OR CAST(IFNULL(d.device_count, 0) AS CHAR) LIKE CONCAT('%', #{keyword}, '%')
+            OR CAST(IFNULL(d.list_price, 0) AS CHAR) LIKE CONCAT('%', #{keyword}, '%')
+            OR CAST(IFNULL(d.before_price, 0) AS CHAR) LIKE CONCAT('%', #{keyword}, '%')
+            OR CAST(IFNULL(d.after_price, 0) AS CHAR) LIKE CONCAT('%', #{keyword}, '%')
+            )
+        </if>
+    </sql>
+
+    <sql id="bindColumnFilterLists">
+        <bind name="_orderId" value="columnFilters == null ? null : columnFilters.get('orderId')"/>
+        <bind name="_area" value="columnFilters == null ? null : columnFilters.get('area')"/>
+        <bind name="_representativeOffice" value="columnFilters == null ? null : columnFilters.get('representativeOffice')"/>
+        <bind name="_country" value="columnFilters == null ? null : columnFilters.get('country')"/>
+        <bind name="_accounts" value="columnFilters == null ? null : columnFilters.get('accounts')"/>
+        <bind name="_project" value="columnFilters == null ? null : columnFilters.get('project')"/>
+        <bind name="_poId" value="columnFilters == null ? null : columnFilters.get('poId')"/>
+        <bind name="_grossProfit" value="columnFilters == null ? null : columnFilters.get('grossProfit')"/>
+        <bind name="_deviceType" value="columnFilters == null ? null : columnFilters.get('deviceType')"/>
+        <bind name="_deviceId" value="columnFilters == null ? null : columnFilters.get('deviceId')"/>
+        <bind name="_description" value="columnFilters == null ? null : columnFilters.get('description')"/>
+        <bind name="_categoryType" value="columnFilters == null ? null : columnFilters.get('categoryType')"/>
+        <bind name="_hardwareType" value="columnFilters == null ? null : columnFilters.get('hardwareType')"/>
+        <bind name="_scene" value="columnFilters == null ? null : columnFilters.get('scene')"/>
+        <bind name="_deviceCount" value="columnFilters == null ? null : columnFilters.get('deviceCount')"/>
+        <bind name="_incomeMonth" value="columnFilters == null ? null : columnFilters.get('incomeMonth')"/>
+        <bind name="_currency" value="columnFilters == null ? null : columnFilters.get('currency')"/>
+        <bind name="_listPrice" value="columnFilters == null ? null : columnFilters.get('listPrice')"/>
+        <bind name="_beforeTier" value="columnFilters == null ? null : columnFilters.get('beforeTier')"/>
+        <bind name="_beforePrice" value="columnFilters == null ? null : columnFilters.get('beforePrice')"/>
+        <bind name="_discountDescBefore" value="columnFilters == null ? null : columnFilters.get('discountDescBefore')"/>
+        <bind name="_afterTier" value="columnFilters == null ? null : columnFilters.get('afterTier')"/>
+        <bind name="_afterPrice" value="columnFilters == null ? null : columnFilters.get('afterPrice')"/>
+        <bind name="_discountDescAfter" value="columnFilters == null ? null : columnFilters.get('discountDescAfter')"/>
+        <bind name="_tierIncrease" value="columnFilters == null ? null : columnFilters.get('tierIncrease')"/>
+        <bind name="_priceIncrease" value="columnFilters == null ? null : columnFilters.get('priceIncrease')"/>
+        <bind name="_afterTierDiscountRate" value="columnFilters == null ? null : columnFilters.get('afterTierDiscountRate')"/>
+        <bind name="_afterPriceDiscountRate" value="columnFilters == null ? null : columnFilters.get('afterPriceDiscountRate')"/>
+        <bind name="_beforeTotalPrice" value="columnFilters == null ? null : columnFilters.get('beforeTotalPrice')"/>
+        <bind name="_afterTotalPrice" value="columnFilters == null ? null : columnFilters.get('afterTotalPrice')"/>
+        <bind name="_totalPriceIncrease" value="columnFilters == null ? null : columnFilters.get('totalPriceIncrease')"/>
+        <bind name="_totalIncreaseRate" value="columnFilters == null ? null : columnFilters.get('totalIncreaseRate')"/>
+        <bind name="_additionInfo" value="columnFilters == null ? null : columnFilters.get('additionInfo')"/>
+    </sql>
+
+    <!-- 列头筛选：多列 AND；单列内多值为 OR；与选项列表字符串精确匹配 -->
+    <sql id="detailColumnFiltersIn">
+        <include refid="bindColumnFilterLists"/>
+        <if test="_orderId != null and _orderId.size() &gt; 0">
+            AND (
+            <foreach item="v" collection="_orderId" separator=" OR ">
+                d.order_id = #{v}
+            </foreach>
+            )
+        </if>
+        <if test="_area != null and _area.size() &gt; 0">
+            AND (
+            <foreach item="v" collection="_area" separator=" OR ">
+                IFNULL(o.area, '') = #{v}
+            </foreach>
+            )
+        </if>
+        <if test="_representativeOffice != null and _representativeOffice.size() &gt; 0">
+            AND (
+            <foreach item="v" collection="_representativeOffice" separator=" OR ">
+                IFNULL(o.representative_office, '') = #{v}
+            </foreach>
+            )
+        </if>
+        <if test="_country != null and _country.size() &gt; 0">
+            AND (
+            <foreach item="v" collection="_country" separator=" OR ">
+                IFNULL(o.country, '') = #{v}
+            </foreach>
+            )
+        </if>
+        <if test="_accounts != null and _accounts.size() &gt; 0">
+            AND (
+            <foreach item="v" collection="_accounts" separator=" OR ">
+                IFNULL(o.accounts, '') = #{v}
+            </foreach>
+            )
+        </if>
+        <if test="_project != null and _project.size() &gt; 0">
+            AND (
+            <foreach item="v" collection="_project" separator=" OR ">
+                IFNULL(o.project, '') = #{v}
+            </foreach>
+            )
+        </if>
+        <if test="_poId != null and _poId.size() &gt; 0">
+            AND (
+            <foreach item="v" collection="_poId" separator=" OR ">
+                IFNULL(o.po_id, '') = #{v}
+            </foreach>
+            )
+        </if>
+        <if test="_grossProfit != null and _grossProfit.size() &gt; 0">
+            AND (
+            <foreach item="v" collection="_grossProfit" separator=" OR ">
+                CAST(IFNULL(o.gross_profit, 0) AS CHAR) = #{v}
+            </foreach>
+            )
+        </if>
+        <if test="_deviceType != null and _deviceType.size() &gt; 0">
+            AND (
+            <foreach item="v" collection="_deviceType" separator=" OR ">
+                IFNULL(d.device_type, '') = #{v}
+            </foreach>
+            )
+        </if>
+        <if test="_deviceId != null and _deviceId.size() &gt; 0">
+            AND (
+            <foreach item="v" collection="_deviceId" separator=" OR ">
+                IFNULL(d.device_id, '') = #{v}
+            </foreach>
+            )
+        </if>
+        <if test="_description != null and _description.size() &gt; 0">
+            AND (
+            <foreach item="v" collection="_description" separator=" OR ">
+                IFNULL(d.description, '') = #{v}
+            </foreach>
+            )
+        </if>
+        <if test="_categoryType != null and _categoryType.size() &gt; 0">
+            AND (
+            <foreach item="v" collection="_categoryType" separator=" OR ">
+                IFNULL(d.category_type, '') = #{v}
+            </foreach>
+            )
+        </if>
+        <if test="_hardwareType != null and _hardwareType.size() &gt; 0">
+            AND (
+            <foreach item="v" collection="_hardwareType" separator=" OR ">
+                IFNULL(d.hardware_type, '') = #{v}
+            </foreach>
+            )
+        </if>
+        <if test="_scene != null and _scene.size() &gt; 0">
+            AND (
+            <foreach item="v" collection="_scene" separator=" OR ">
+                IFNULL(d.scene, '') = #{v}
+            </foreach>
+            )
+        </if>
+        <if test="_deviceCount != null and _deviceCount.size() &gt; 0">
+            AND (
+            <foreach item="v" collection="_deviceCount" separator=" OR ">
+                CAST(IFNULL(d.device_count, 0) AS CHAR) = #{v}
+            </foreach>
+            )
+        </if>
+        <if test="_incomeMonth != null and _incomeMonth.size() &gt; 0">
+            AND (
+            <foreach item="v" collection="_incomeMonth" separator=" OR ">
+                IFNULL(d.income_month, '') = #{v}
+            </foreach>
+            )
+        </if>
+        <if test="_currency != null and _currency.size() &gt; 0">
+            AND (
+            <foreach item="v" collection="_currency" separator=" OR ">
+                IFNULL(d.currency, '') = #{v}
+            </foreach>
+            )
+        </if>
+        <if test="_listPrice != null and _listPrice.size() &gt; 0">
+            AND (
+            <foreach item="v" collection="_listPrice" separator=" OR ">
+                CAST(IFNULL(d.list_price, 0) AS CHAR) = #{v}
+            </foreach>
+            )
+        </if>
+        <if test="_beforeTier != null and _beforeTier.size() &gt; 0">
+            AND (
+            <foreach item="v" collection="_beforeTier" separator=" OR ">
+                CAST(IFNULL(d.before_tier, 0) AS CHAR) = #{v}
+            </foreach>
+            )
+        </if>
+        <if test="_beforePrice != null and _beforePrice.size() &gt; 0">
+            AND (
+            <foreach item="v" collection="_beforePrice" separator=" OR ">
+                CAST(IFNULL(d.before_price, 0) AS CHAR) = #{v}
+            </foreach>
+            )
+        </if>
+        <if test="_discountDescBefore != null and _discountDescBefore.size() &gt; 0">
+            AND (
+            <foreach item="v" collection="_discountDescBefore" separator=" OR ">
+                IFNULL(d.discount_desc_before, '') = #{v}
+            </foreach>
+            )
+        </if>
+        <if test="_afterTier != null and _afterTier.size() &gt; 0">
+            AND (
+            <foreach item="v" collection="_afterTier" separator=" OR ">
+                CAST(IFNULL(d.after_tier, 0) AS CHAR) = #{v}
+            </foreach>
+            )
+        </if>
+        <if test="_afterPrice != null and _afterPrice.size() &gt; 0">
+            AND (
+            <foreach item="v" collection="_afterPrice" separator=" OR ">
+                CAST(IFNULL(d.after_price, 0) AS CHAR) = #{v}
+            </foreach>
+            )
+        </if>
+        <if test="_discountDescAfter != null and _discountDescAfter.size() &gt; 0">
+            AND (
+            <foreach item="v" collection="_discountDescAfter" separator=" OR ">
+                IFNULL(d.discount_desc_after, '') = #{v}
+            </foreach>
+            )
+        </if>
+        <if test="_tierIncrease != null and _tierIncrease.size() &gt; 0">
+            AND (
+            <foreach item="v" collection="_tierIncrease" separator=" OR ">
+                CAST(IFNULL(d.tier_increase, 0) AS CHAR) = #{v}
+            </foreach>
+            )
+        </if>
+        <if test="_priceIncrease != null and _priceIncrease.size() &gt; 0">
+            AND (
+            <foreach item="v" collection="_priceIncrease" separator=" OR ">
+                CAST(IFNULL(d.price_increase, 0) AS CHAR) = #{v}
+            </foreach>
+            )
+        </if>
+        <if test="_afterTierDiscountRate != null and _afterTierDiscountRate.size() &gt; 0">
+            AND (
+            <foreach item="v" collection="_afterTierDiscountRate" separator=" OR ">
+                CAST(IFNULL(d.after_tier_discount_rate, 0) AS CHAR) = #{v}
+            </foreach>
+            )
+        </if>
+        <if test="_afterPriceDiscountRate != null and _afterPriceDiscountRate.size() &gt; 0">
+            AND (
+            <foreach item="v" collection="_afterPriceDiscountRate" separator=" OR ">
+                CAST(IFNULL(d.after_price_discount_rate, 0) AS CHAR) = #{v}
+            </foreach>
+            )
+        </if>
+        <if test="_beforeTotalPrice != null and _beforeTotalPrice.size() &gt; 0">
+            AND (
+            <foreach item="v" collection="_beforeTotalPrice" separator=" OR ">
+                CAST(IFNULL(d.before_total_price, 0) AS CHAR) = #{v}
+            </foreach>
+            )
+        </if>
+        <if test="_afterTotalPrice != null and _afterTotalPrice.size() &gt; 0">
+            AND (
+            <foreach item="v" collection="_afterTotalPrice" separator=" OR ">
+                CAST(IFNULL(d.after_total_price, 0) AS CHAR) = #{v}
+            </foreach>
+            )
+        </if>
+        <if test="_totalPriceIncrease != null and _totalPriceIncrease.size() &gt; 0">
+            AND (
+            <foreach item="v" collection="_totalPriceIncrease" separator=" OR ">
+                CAST(IFNULL(d.total_price_increase, 0) AS CHAR) = #{v}
+            </foreach>
+            )
+        </if>
+        <if test="_totalIncreaseRate != null and _totalIncreaseRate.size() &gt; 0">
+            AND (
+            <foreach item="v" collection="_totalIncreaseRate" separator=" OR ">
+                CAST(IFNULL(d.total_increase_rate, 0) AS CHAR) = #{v}
+            </foreach>
+            )
+        </if>
+        <if test="_additionInfo != null and _additionInfo.size() &gt; 0">
+            AND (
+            <foreach item="v" collection="_additionInfo" separator=" OR ">
+                IFNULL(d.addition_info, '') = #{v}
+            </foreach>
+            )
+        </if>
+    </sql>
+
+    <sql id="detailWhereFilters">
+        <choose>
+            <when test="columnFilters != null and columnFilters.size() &gt; 0">
+                <include refid="detailColumnFiltersIn"/>
+            </when>
+            <otherwise>
+                <include refid="detailKeywordFilter"/>
+            </otherwise>
+        </choose>
+    </sql>
+
+    <!-- 列去重可选值：只应用列筛选（与 column-options 接口一致，不引用 keyword） -->
+    <sql id="detailWhereFiltersFacet">
+        <if test="columnFilters != null and columnFilters.size() &gt; 0">
+            <include refid="detailColumnFiltersIn"/>
+        </if>
+    </sql>
+
+    <select id="listDistinctColumnValues" resultType="java.lang.String">
+        SELECT DISTINCT
+        <choose>
+            <when test="field == 'orderId'">d.order_id</when>
+            <when test="field == 'area'">IFNULL(o.area, '')</when>
+            <when test="field == 'representativeOffice'">IFNULL(o.representative_office, '')</when>
+            <when test="field == 'country'">IFNULL(o.country, '')</when>
+            <when test="field == 'accounts'">IFNULL(o.accounts, '')</when>
+            <when test="field == 'project'">IFNULL(o.project, '')</when>
+            <when test="field == 'poId'">IFNULL(o.po_id, '')</when>
+            <when test="field == 'grossProfit'">CAST(IFNULL(o.gross_profit, 0) AS CHAR)</when>
+            <when test="field == 'deviceType'">IFNULL(d.device_type, '')</when>
+            <when test="field == 'deviceId'">IFNULL(d.device_id, '')</when>
+            <when test="field == 'description'">IFNULL(d.description, '')</when>
+            <when test="field == 'categoryType'">IFNULL(d.category_type, '')</when>
+            <when test="field == 'hardwareType'">IFNULL(d.hardware_type, '')</when>
+            <when test="field == 'scene'">IFNULL(d.scene, '')</when>
+            <when test="field == 'deviceCount'">CAST(IFNULL(d.device_count, 0) AS CHAR)</when>
+            <when test="field == 'incomeMonth'">IFNULL(d.income_month, '')</when>
+            <when test="field == 'currency'">IFNULL(d.currency, '')</when>
+            <when test="field == 'listPrice'">CAST(IFNULL(d.list_price, 0) AS CHAR)</when>
+            <when test="field == 'beforeTier'">CAST(IFNULL(d.before_tier, 0) AS CHAR)</when>
+            <when test="field == 'beforePrice'">CAST(IFNULL(d.before_price, 0) AS CHAR)</when>
+            <when test="field == 'discountDescBefore'">IFNULL(d.discount_desc_before, '')</when>
+            <when test="field == 'afterTier'">CAST(IFNULL(d.after_tier, 0) AS CHAR)</when>
+            <when test="field == 'afterPrice'">CAST(IFNULL(d.after_price, 0) AS CHAR)</when>
+            <when test="field == 'discountDescAfter'">IFNULL(d.discount_desc_after, '')</when>
+            <when test="field == 'tierIncrease'">CAST(IFNULL(d.tier_increase, 0) AS CHAR)</when>
+            <when test="field == 'priceIncrease'">CAST(IFNULL(d.price_increase, 0) AS CHAR)</when>
+            <when test="field == 'afterTierDiscountRate'">CAST(IFNULL(d.after_tier_discount_rate, 0) AS CHAR)</when>
+            <when test="field == 'afterPriceDiscountRate'">CAST(IFNULL(d.after_price_discount_rate, 0) AS CHAR)</when>
+            <when test="field == 'beforeTotalPrice'">CAST(IFNULL(d.before_total_price, 0) AS CHAR)</when>
+            <when test="field == 'afterTotalPrice'">CAST(IFNULL(d.after_total_price, 0) AS CHAR)</when>
+            <when test="field == 'totalPriceIncrease'">CAST(IFNULL(d.total_price_increase, 0) AS CHAR)</when>
+            <when test="field == 'totalIncreaseRate'">CAST(IFNULL(d.total_increase_rate, 0) AS CHAR)</when>
+            <when test="field == 'additionInfo'">IFNULL(d.addition_info, '')</when>
+            <otherwise>d.order_id</otherwise>
+        </choose>
+        AS v
+        FROM t_order_product_detail_data d
+        LEFT JOIN t_order_info o ON d.task_id = o.task_id AND d.order_id = o.order_id
+        WHERE d.task_id = #{taskId}
+        <include refid="detailWhereFiltersFacet"/>
+        ORDER BY v
+        LIMIT 10000
+    </select>
+
+    <select id="findPage" resultMap="OrderDetailPageItemMap">
+        SELECT d.*,
+               o.area,
+               o.representative_office,
+               o.country,
+               o.accounts,
+               o.project,
+               o.po_id,
+               o.gross_profit
+        FROM t_order_product_detail_data d
+        LEFT JOIN t_order_info o ON d.task_id = o.task_id AND d.order_id = o.order_id
+        WHERE d.task_id = #{taskId}
+        <include refid="detailWhereFilters"/>
+        ORDER BY d.order_id, d.id
+        LIMIT #{limit} OFFSET #{offset}
+    </select>
+
+    <select id="countByTask" resultType="long">
+        SELECT COUNT(*)
+        FROM t_order_product_detail_data d
+        LEFT JOIN t_order_info o ON d.task_id = o.task_id AND d.order_id = o.order_id
+        WHERE d.task_id = #{taskId}
+        <include refid="detailWhereFilters"/>
+    </select>
+
+    <select id="findRowById" resultMap="DetailRowResultMap">
+        SELECT * FROM t_order_product_detail_data WHERE id = #{id}
+    </select>
+
+    <update id="updateRow">
+        UPDATE t_order_product_detail_data SET
+            device_type = #{deviceType}, device_id = #{deviceId}, description = #{description}, category_type = #{categoryType},
+            hardware_type = #{hardwareType}, scene = #{scene}, device_count = #{deviceCount}, income_month = #{incomeMonth}, currency = #{currency},
+            list_price = #{listPrice}, before_tier = #{beforeTier}, before_price = #{beforePrice}, discount_desc_before = #{discountDescBefore},
+            after_tier = #{afterTier}, after_price = #{afterPrice}, discount_desc_after = #{discountDescAfter},
+            tier_increase = #{tierIncrease}, price_increase = #{priceIncrease}, after_tier_discount_rate = #{afterTierDiscountRate},
+            after_price_discount_rate = #{afterPriceDiscountRate}, before_total_price = #{beforeTotalPrice}, after_total_price = #{afterTotalPrice},
+            total_price_increase = #{totalPriceIncrease}, total_increase_rate = #{totalIncreaseRate}, addition_info = #{additionInfo}
+        WHERE id = #{id} AND task_id = #{taskId}
+    </update>
+
+    <select id="findAllByTask" resultMap="DetailRowResultMap">
+        SELECT * FROM t_order_product_detail_data WHERE task_id = #{taskId}
+    </select>
+</mapper>

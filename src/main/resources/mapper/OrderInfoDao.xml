@@ -1,0 +1,45 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "https://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.huawei.tool.dao.OrderInfoDao">
+
+    <resultMap id="OrderRowResultMap" type="com.huawei.tool.dao.model.OrderRow">
+        <result column="order_id" property="orderId"/>
+        <result column="area" property="area"/>
+        <result column="representative_office" property="representativeOffice"/>
+        <result column="country" property="country"/>
+        <result column="accounts" property="accounts"/>
+        <result column="project" property="project"/>
+        <result column="po_id" property="poId"/>
+        <result column="gross_profit" property="grossProfit"/>
+    </resultMap>
+
+    <select id="selectByTaskId" resultMap="OrderRowResultMap">
+        SELECT order_id, area, representative_office, country, accounts, project, po_id, gross_profit
+        FROM t_order_info WHERE task_id = #{taskId}
+    </select>
+
+    <select id="selectByTaskIdAndOrderId" resultMap="OrderRowResultMap">
+        SELECT order_id, area, representative_office, country, accounts, project, po_id, gross_profit
+        FROM t_order_info WHERE task_id = #{taskId} AND order_id = #{orderId}
+    </select>
+
+    <update id="updateOrder">
+        UPDATE t_order_info SET
+            area = #{r.area},
+            representative_office = #{r.representativeOffice},
+            country = #{r.country},
+            accounts = #{r.accounts},
+            project = #{r.project},
+            po_id = #{r.poId},
+            gross_profit = #{r.grossProfit}
+        WHERE task_id = #{taskId} AND order_id = #{r.orderId}
+    </update>
+
+    <insert id="batchInsert">
+        INSERT INTO t_order_info (task_id, order_id, area, representative_office, country, accounts, project, po_id, gross_profit)
+        VALUES
+        <foreach collection="rows" item="r" separator=",">
+            (#{taskId}, #{r.orderId}, #{r.area}, #{r.representativeOffice}, #{r.country}, #{r.accounts}, #{r.project}, #{r.poId}, #{r.grossProfit})
+        </foreach>
+    </insert>
+</mapper>
