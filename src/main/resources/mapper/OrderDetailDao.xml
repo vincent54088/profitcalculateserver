@@ -41,6 +41,7 @@
         <result column="accounts" property="accounts"/>
         <result column="project" property="project"/>
         <result column="po_id" property="poId"/>
+        <result column="product_domain" property="productDomain"/>
     </resultMap>
 
     <insert id="batchInsert">
@@ -81,6 +82,7 @@
             OR IFNULL(o.accounts, '') LIKE CONCAT('%', #{keyword}, '%')
             OR IFNULL(o.project, '') LIKE CONCAT('%', #{keyword}, '%')
             OR IFNULL(o.po_id, '') LIKE CONCAT('%', #{keyword}, '%')
+            OR IFNULL(o.product_domain, '') LIKE CONCAT('%', #{keyword}, '%')
             OR CAST(IFNULL(d.device_count, 0) AS CHAR) LIKE CONCAT('%', #{keyword}, '%')
             OR CAST(IFNULL(d.list_price, 0) AS CHAR) LIKE CONCAT('%', #{keyword}, '%')
             OR CAST(IFNULL(d.before_price, 0) AS CHAR) LIKE CONCAT('%', #{keyword}, '%')
@@ -98,6 +100,7 @@
         <bind name="_accounts" value="columnFilters == null ? null : columnFilters.get('accounts')"/>
         <bind name="_project" value="columnFilters == null ? null : columnFilters.get('project')"/>
         <bind name="_poId" value="columnFilters == null ? null : columnFilters.get('poId')"/>
+        <bind name="_productDomain" value="columnFilters == null ? null : columnFilters.get('productDomain')"/>
         <bind name="_grossProfit" value="columnFilters == null ? null : columnFilters.get('grossProfit')"/>
         <bind name="_deviceType" value="columnFilters == null ? null : columnFilters.get('deviceType')"/>
         <bind name="_deviceId" value="columnFilters == null ? null : columnFilters.get('deviceId')"/>
@@ -175,6 +178,13 @@
             AND (
             <foreach item="v" collection="_poId" separator=" OR ">
                 IFNULL(o.po_id, '') = #{v}
+            </foreach>
+            )
+        </if>
+        <if test="_productDomain != null and _productDomain.size() &gt; 0">
+            AND (
+            <foreach item="v" collection="_productDomain" separator=" OR ">
+                IFNULL(o.product_domain, '') = #{v}
             </foreach>
             )
         </if>
@@ -390,6 +400,7 @@
             <when test="field == 'accounts'">IFNULL(o.accounts, '')</when>
             <when test="field == 'project'">IFNULL(o.project, '')</when>
             <when test="field == 'poId'">IFNULL(o.po_id, '')</when>
+            <when test="field == 'productDomain'">IFNULL(o.product_domain, '')</when>
             <when test="field == 'grossProfit'">CAST(IFNULL(d.gross_profit, 0) AS CHAR)</when>
             <when test="field == 'deviceType'">IFNULL(d.device_type, '')</when>
             <when test="field == 'deviceId'">IFNULL(d.device_id, '')</when>
@@ -434,7 +445,8 @@
                o.country,
                o.accounts,
                o.project,
-               o.po_id
+               o.po_id,
+               o.product_domain
         FROM t_order_product_detail_data d
         LEFT JOIN t_order_info o ON d.task_id = o.task_id AND d.order_id = o.order_id
         WHERE d.task_id = #{taskId}

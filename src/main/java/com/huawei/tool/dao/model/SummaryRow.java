@@ -4,6 +4,8 @@ import java.math.BigDecimal;
 
 public class SummaryRow {
     private String taskId;
+    /** 跨任务列表查询时由 JOIN 填充，单任务分页可为空 */
+    private String taskName;
     private String orderId;
     private String incomeMonth;
     private String area;
@@ -12,12 +14,14 @@ public class SummaryRow {
     private String accounts;
     private String project;
     private String poId;
+    private String productDomain;
     private BigDecimal grossProfit;
     private BigDecimal hwPspGrossProfit;
     private BigDecimal hwStandardGrossProfit;
     private BigDecimal beforeTotalPrice;
     private BigDecimal afterTotalPrice;
     private BigDecimal totalPriceIncrease;
+    private BigDecimal priceIncreaseRate;
     private BigDecimal softwareHistoryPrice;
     private BigDecimal softwarePrice;
     private BigDecimal softwarePriceIncreaseRate;
@@ -28,6 +32,14 @@ public class SummaryRow {
 
     public void setTaskId(String taskId) {
         this.taskId = taskId;
+    }
+
+    public String getTaskName() {
+        return taskName;
+    }
+
+    public void setTaskName(String taskName) {
+        this.taskName = taskName;
     }
 
     public String getOrderId() {
@@ -94,6 +106,14 @@ public class SummaryRow {
         this.poId = poId;
     }
 
+    public String getProductDomain() {
+        return productDomain;
+    }
+
+    public void setProductDomain(String productDomain) {
+        this.productDomain = productDomain;
+    }
+
     public BigDecimal getGrossProfit() {
         return grossProfit;
     }
@@ -140,6 +160,14 @@ public class SummaryRow {
 
     public void setTotalPriceIncrease(BigDecimal totalPriceIncrease) {
         this.totalPriceIncrease = totalPriceIncrease;
+    }
+
+    public BigDecimal getPriceIncreaseRate() {
+        return priceIncreaseRate;
+    }
+
+    public void setPriceIncreaseRate(BigDecimal priceIncreaseRate) {
+        this.priceIncreaseRate = priceIncreaseRate;
     }
 
     public BigDecimal getSoftwareHistoryPrice() {

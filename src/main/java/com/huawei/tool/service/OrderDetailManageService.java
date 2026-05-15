@@ -32,6 +32,7 @@ public class OrderDetailManageService {
             "accounts",
             "project",
             "poId",
+            "productDomain",
             "grossProfit",
             "deviceType",
             "deviceId",
@@ -183,6 +184,7 @@ public class OrderDetailManageService {
         p.setAccounts(b.getAccounts());
         p.setProject(b.getProject());
         p.setPoId(b.getPoId());
+        p.setProductDomain(b.getProductDomain());
         return p;
     }
 }

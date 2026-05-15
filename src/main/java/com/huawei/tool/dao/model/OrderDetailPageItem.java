@@ -11,6 +11,7 @@ public class OrderDetailPageItem extends DetailRow {
     private String accounts;
     private String project;
     private String poId;
+    private String productDomain;
 
     public String getArea() {
         return area;
@@ -58,5 +59,13 @@ public class OrderDetailPageItem extends DetailRow {
 
     public void setPoId(String poId) {
         this.poId = poId;
+    }
+
+    public String getProductDomain() {
+        return productDomain;
+    }
+
+    public void setProductDomain(String productDomain) {
+        this.productDomain = productDomain;
     }
 }

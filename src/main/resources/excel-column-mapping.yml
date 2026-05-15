@@ -17,6 +17,7 @@ excel:
       客户群: accounts
       项目: project
       "PO号": po_id
+      产品领域: product_domain
     detail-column-map:
       合同号: order_id
       销毛: gross_profit

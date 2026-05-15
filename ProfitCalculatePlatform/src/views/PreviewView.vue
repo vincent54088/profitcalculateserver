@@ -61,6 +61,7 @@
           <el-form-item label="客户群"><el-input v-model="edit.accounts" /></el-form-item>
           <el-form-item label="项目"><el-input v-model="edit.project" /></el-form-item>
           <el-form-item label="PO号"><el-input v-model="edit.poId" /></el-form-item>
+          <el-form-item label="产品领域"><el-input v-model="edit.productDomain" /></el-form-item>
 
           <el-divider content-position="left">订单明细</el-divider>
           <el-form-item label="销毛"><el-input v-model.number="edit.grossProfit" type="number" step="any" /></el-form-item>
@@ -121,6 +122,7 @@ interface DetailRowItem {
   accounts?: string | null
   project?: string | null
   poId?: string | null
+  productDomain?: string | null
   grossProfit?: number | null
   deviceType?: string | null
   deviceId?: string | null
@@ -158,6 +160,7 @@ type PreviewColKey = keyof Pick<
   | 'accounts'
   | 'project'
   | 'poId'
+  | 'productDomain'
   | 'grossProfit'
   | 'deviceType'
   | 'deviceId'
@@ -204,6 +207,7 @@ const previewColumns: PreviewColDef[] = [
   { prop: 'accounts', label: '客户群', width: 100 },
   { prop: 'project', label: '项目', width: 120 },
   { prop: 'poId', label: 'PO号', width: 120 },
+  { prop: 'productDomain', label: '产品领域', width: 120 },
   { prop: 'grossProfit', label: '销毛', width: 100 },
   { prop: 'deviceType', label: '型号', width: 120 },
   { prop: 'deviceId', label: '编码', width: 120 },

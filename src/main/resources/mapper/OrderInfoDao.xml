@@ -10,15 +10,16 @@
         <result column="accounts" property="accounts"/>
         <result column="project" property="project"/>
         <result column="po_id" property="poId"/>
+        <result column="product_domain" property="productDomain"/>
     </resultMap>
 
     <select id="selectByTaskId" resultMap="OrderRowResultMap">
-        SELECT order_id, area, representative_office, country, accounts, project, po_id
+        SELECT order_id, area, representative_office, country, accounts, project, po_id, product_domain
         FROM t_order_info WHERE task_id = #{taskId}
     </select>
 
     <select id="selectByTaskIdAndOrderId" resultMap="OrderRowResultMap">
-        SELECT order_id, area, representative_office, country, accounts, project, po_id
+        SELECT order_id, area, representative_office, country, accounts, project, po_id, product_domain
         FROM t_order_info WHERE task_id = #{taskId} AND order_id = #{orderId}
     </select>
 
@@ -29,15 +30,16 @@
             country = #{r.country},
             accounts = #{r.accounts},
             project = #{r.project},
-            po_id = #{r.poId}
+            po_id = #{r.poId},
+            product_domain = #{r.productDomain}
         WHERE task_id = #{taskId} AND order_id = #{r.orderId}
     </update>
 
     <insert id="batchInsert">
-        INSERT INTO t_order_info (task_id, order_id, area, representative_office, country, accounts, project, po_id)
+        INSERT INTO t_order_info (task_id, order_id, area, representative_office, country, accounts, project, po_id, product_domain)
         VALUES
         <foreach collection="rows" item="r" separator=",">
-            (#{taskId}, #{r.orderId}, #{r.area}, #{r.representativeOffice}, #{r.country}, #{r.accounts}, #{r.project}, #{r.poId})
+            (#{taskId}, #{r.orderId}, #{r.area}, #{r.representativeOffice}, #{r.country}, #{r.accounts}, #{r.project}, #{r.poId}, #{r.productDomain})
         </foreach>
     </insert>
 </mapper>

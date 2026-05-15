@@ -127,6 +127,12 @@ public class ProfitCalculationService {
             }
 
             BigDecimal totalPriceIncrease = serverHwAfterSum.subtract(serverHwBeforeSum);
+            BigDecimal priceIncreaseRate = null;
+            if (serverHwBeforeSum.compareTo(BigDecimal.ZERO) > 0) {
+                priceIncreaseRate = serverHwAfterSum.subtract(serverHwBeforeSum)
+                        .divide(serverHwBeforeSum, 8, RoundingMode.HALF_UP)
+                        .setScale(4, RoundingMode.HALF_UP);
+            }
             BigDecimal swRate = null;
             if (swBeforeSum.compareTo(BigDecimal.ZERO) > 0) {
                 swRate = BigDecimal.ONE.subtract(swAfterSum.divide(swBeforeSum, 8, RoundingMode.HALF_UP))
@@ -143,12 +149,14 @@ public class ProfitCalculationService {
             s.setAccounts(order.getAccounts());
             s.setProject(order.getProject());
             s.setPoId(order.getPoId());
+            s.setProductDomain(order.getProductDomain());
             s.setGrossProfit(softwareGrossProfitSum);
             s.setHwPspGrossProfit(hwPspGp);
             s.setHwStandardGrossProfit(hwStdGp);
             s.setBeforeTotalPrice(serverHwBeforeSum);
             s.setAfterTotalPrice(serverHwAfterSum);
             s.setTotalPriceIncrease(totalPriceIncrease);
+            s.setPriceIncreaseRate(priceIncreaseRate);
             s.setSoftwareHistoryPrice(swBeforeSum);
             s.setSoftwarePrice(swAfterSum);
             s.setSoftwarePriceIncreaseRate(swRate);

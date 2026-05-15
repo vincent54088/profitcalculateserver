@@ -17,5 +17,9 @@ public interface SummaryReportDao {
 
     long countByTask(@Param("taskId") String taskId);
 
+    long countAll();
+
+    List<SummaryRow> findPageAll(@Param("offset") int offset, @Param("limit") int limit);
+
     List<SummaryRow> findAllByTask(@Param("taskId") String taskId);
 }

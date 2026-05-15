@@ -8,6 +8,7 @@ public class OrderRow {
     private String accounts;
     private String project;
     private String poId;
+    private String productDomain;
 
     public String getOrderId() {
         return orderId;
@@ -63,5 +64,13 @@ public class OrderRow {
 
     public void setPoId(String poId) {
         this.poId = poId;
+    }
+
+    public String getProductDomain() {
+        return productDomain;
+    }
+
+    public void setProductDomain(String productDomain) {
+        this.productDomain = productDomain;
     }
 }

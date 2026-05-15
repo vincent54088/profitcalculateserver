@@ -43,6 +43,18 @@ public class SummaryReportManageService {
         return m;
     }
 
+    /** 分页返回库中全部汇算结果行（跨任务），含任务名称（便于前端展示） */
+    public Map<String, Object> pageSummaryAll(int page, int size) {
+        int safeSize = Math.min(Math.max(size, 1), 500);
+        long total = summaryReportDao.countAll();
+        int offset = Math.max(page, 0) * safeSize;
+        List<SummaryRow> items = summaryReportDao.findPageAll(offset, safeSize);
+        Map<String, Object> m = new HashMap<>();
+        m.put("total", total);
+        m.put("items", items);
+        return m;
+    }
+
     public Path exportSummaryFile(String taskId) throws Exception {
         TaskRow t = taskDao.find(taskId).orElseThrow(() -> new IllegalArgumentException("任务不存在"));
         if (!TaskStatus.SUCCESS.equals(t.getTaskStatus())) {

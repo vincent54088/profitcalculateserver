@@ -120,6 +120,10 @@ public class OrderExcelImportService {
                 OrderRow o = parseOrderRow(row, header);
                 o.setOrderId(oid);
                 orderById.put(oid, o);
+            } else {
+                OrderRow patch = parseOrderRow(row, header);
+                patch.setOrderId(oid);
+                OrderMerge.merge(orderById.get(oid), patch);
             }
             detailRows.add(parseDetailRow(taskId, row, header, oid));
         }
@@ -148,6 +152,7 @@ public class OrderExcelImportService {
         o.setAccounts(text(row, col(header, "客户群")));
         o.setProject(text(row, col(header, "项目")));
         o.setPoId(text(row, col(header, "PO号")));
+        o.setProductDomain(text(row, col(header, "产品领域")));
         return o;
     }
 

@@ -105,6 +105,13 @@ public class ProfitApiController {
         orderDetailManageService.updateDetail(taskId, detailId, body);
     }
 
+    @GetMapping("/summary")
+    public Map<String, Object> summaryPageAll(
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "20") int size) {
+        return summaryReportManageService.pageSummaryAll(page, size);
+    }
+
     @GetMapping("/tasks/{taskId}/summary")
     public Map<String, Object> summaryPage(
             @PathVariable String taskId,
