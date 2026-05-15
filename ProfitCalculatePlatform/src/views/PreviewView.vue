@@ -61,9 +61,9 @@
           <el-form-item label="客户群"><el-input v-model="edit.accounts" /></el-form-item>
           <el-form-item label="项目"><el-input v-model="edit.project" /></el-form-item>
           <el-form-item label="PO号"><el-input v-model="edit.poId" /></el-form-item>
-          <el-form-item label="销毛"><el-input v-model.number="edit.grossProfit" type="number" step="any" /></el-form-item>
 
           <el-divider content-position="left">订单明细</el-divider>
+          <el-form-item label="销毛"><el-input v-model.number="edit.grossProfit" type="number" step="any" /></el-form-item>
           <el-form-item label="型号"><el-input v-model="edit.deviceType" /></el-form-item>
           <el-form-item label="编码"><el-input v-model="edit.deviceId" /></el-form-item>
           <el-form-item label="编码描述"><el-input v-model="edit.description" type="textarea" :rows="2" /></el-form-item>

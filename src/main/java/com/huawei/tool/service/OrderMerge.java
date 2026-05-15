@@ -2,9 +2,6 @@ package com.huawei.tool.service;
 
 import com.huawei.tool.dao.model.OrderRow;
 
-import java.math.BigDecimal;
-import java.util.function.Consumer;
-
 public final class OrderMerge {
 
     private OrderMerge() {
@@ -29,13 +26,6 @@ public final class OrderMerge {
         if (patch.getPoId() != null) {
             existing.setPoId(patch.getPoId());
         }
-        copyDecimal(patch.getGrossProfit(), existing::setGrossProfit);
         return existing;
-    }
-
-    private static void copyDecimal(BigDecimal v, Consumer<BigDecimal> setter) {
-        if (v != null) {
-            setter.accept(v);
-        }
     }
 }

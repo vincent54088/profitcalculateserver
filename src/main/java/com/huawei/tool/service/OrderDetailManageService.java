@@ -183,7 +183,6 @@ public class OrderDetailManageService {
         p.setAccounts(b.getAccounts());
         p.setProject(b.getProject());
         p.setPoId(b.getPoId());
-        p.setGrossProfit(b.getGrossProfit());
         return p;
     }
 }

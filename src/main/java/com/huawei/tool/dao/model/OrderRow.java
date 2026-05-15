@@ -1,7 +1,5 @@
 package com.huawei.tool.dao.model;
 
-import java.math.BigDecimal;
-
 public class OrderRow {
     private String orderId;
     private String area;
@@ -10,7 +8,6 @@ public class OrderRow {
     private String accounts;
     private String project;
     private String poId;
-    private BigDecimal grossProfit;
 
     public String getOrderId() {
         return orderId;
@@ -66,13 +63,5 @@ public class OrderRow {
 
     public void setPoId(String poId) {
         this.poId = poId;
-    }
-
-    public BigDecimal getGrossProfit() {
-        return grossProfit;
-    }
-
-    public void setGrossProfit(BigDecimal grossProfit) {
-        this.grossProfit = grossProfit;
     }
 }

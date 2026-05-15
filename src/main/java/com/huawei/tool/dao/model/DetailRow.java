@@ -30,6 +30,8 @@ public class DetailRow {
     private BigDecimal afterTotalPrice;
     private BigDecimal totalPriceIncrease;
     private BigDecimal totalIncreaseRate;
+    /** 销毛，与软硬件明细行对应 */
+    private BigDecimal grossProfit;
     private String additionInfo;
 
     public String getId() {
@@ -246,6 +248,14 @@ public class DetailRow {
 
     public void setTotalIncreaseRate(BigDecimal totalIncreaseRate) {
         this.totalIncreaseRate = totalIncreaseRate;
+    }
+
+    public BigDecimal getGrossProfit() {
+        return grossProfit;
+    }
+
+    public void setGrossProfit(BigDecimal grossProfit) {
+        this.grossProfit = grossProfit;
     }
 
     public String getAdditionInfo() {

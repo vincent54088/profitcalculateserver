@@ -22,7 +22,7 @@
     </insert>
 
     <select id="findPage" resultType="com.huawei.tool.dao.model.SummaryRow">
-        SELECT * FROM t_summary_report WHERE task_id = #{taskId} ORDER BY order_id, income_month LIMIT #{limit} OFFSET #{offset}
+        SELECT * FROM t_summary_report WHERE task_id = #{taskId} ORDER BY order_id LIMIT #{limit} OFFSET #{offset}
     </select>
 
     <select id="countByTask" resultType="long">
@@ -30,6 +30,6 @@
     </select>
 
     <select id="findAllByTask" resultType="com.huawei.tool.dao.model.SummaryRow">
-        SELECT * FROM t_summary_report WHERE task_id = #{taskId} ORDER BY order_id, income_month
+        SELECT * FROM t_summary_report WHERE task_id = #{taskId} ORDER BY order_id
     </select>
 </mapper>
