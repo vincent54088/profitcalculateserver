@@ -120,6 +120,10 @@ public class OrderExcelImportService {
                 OrderRow o = parseOrderRow(row, header);
                 o.setOrderId(oid);
                 orderById.put(oid, o);
+            } else {
+                OrderRow patch = parseOrderRow(row, header);
+                patch.setOrderId(oid);
+                OrderMerge.merge(orderById.get(oid), patch);
             }
             detailRows.add(parseDetailRow(taskId, row, header, oid));
         }
@@ -148,7 +152,7 @@ public class OrderExcelImportService {
         o.setAccounts(text(row, col(header, "客户群")));
         o.setProject(text(row, col(header, "项目")));
         o.setPoId(text(row, col(header, "PO号")));
-        o.setGrossProfit(decimal(row, col(header, "销毛")));
+        o.setProductDomain(text(row, col(header, "产品领域")));
         return o;
     }
 
@@ -181,6 +185,7 @@ public class OrderExcelImportService {
         d.setAfterTotalPrice(decimal(row, colOpt(header, "提价后-总价")));
         d.setTotalPriceIncrease(decimal(row, colOpt(header, "总价上涨")));
         d.setTotalIncreaseRate(decimal(row, colOpt(header, "涨价%")));
+        d.setGrossProfit(decimal(row, colOpt(header, "销毛")));
         d.setAdditionInfo(text(row, colOpt(header, "备注")));
         return d;
     }

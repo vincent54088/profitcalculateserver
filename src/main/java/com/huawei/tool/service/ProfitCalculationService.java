@@ -25,6 +25,9 @@ public class ProfitCalculationService {
 
     private static final Logger log = LoggerFactory.getLogger(ProfitCalculationService.class);
 
+    /** 汇总表按合同一行聚合，收入确定时间列占位（不按月份拆分汇算结果） */
+    private static final String AGGREGATE_INCOME_MONTH_PLACEHOLDER = "-";
+
     private final OrderDetailDao orderDetailDao;
     private final OrderInfoDao orderInfoDao;
     private final ProductCostDao productCostDao;
@@ -48,18 +51,18 @@ public class ProfitCalculationService {
         Map<String, OrderRow> orders = orderInfoDao.mapByOrderId(taskId);
         Map<String, CostRow> costs = productCostDao.findAllAsMap();
 
-        Map<String, List<DetailRow>> groups = new HashMap<>();
+        Map<String, List<DetailRow>> byOrder = new HashMap<>();
         for (DetailRow d : details) {
-            String monthRaw = d.getIncomeMonth() == null ? "" : d.getIncomeMonth().trim();
-            String key = d.getOrderId() + "\u0001" + monthRaw;
-            groups.computeIfAbsent(key, k -> new ArrayList<>()).add(d);
+            if (d.getOrderId() == null || d.getOrderId().trim().isEmpty()) {
+                continue;
+            }
+            String oid = d.getOrderId().trim();
+            byOrder.computeIfAbsent(oid, k -> new ArrayList<>()).add(d);
         }
 
         List<SummaryRow> out = new ArrayList<>();
-        for (Map.Entry<String, List<DetailRow>> e : groups.entrySet()) {
-            String[] parts = e.getKey().split("\u0001", 2);
-            String orderId = parts[0];
-            String monthRaw = parts.length > 1 ? parts[1] : "";
+        for (Map.Entry<String, List<DetailRow>> e : byOrder.entrySet()) {
+            String orderId = e.getKey();
             List<DetailRow> lines = e.getValue();
 
             OrderRow order = orders.get(orderId);
@@ -68,27 +71,36 @@ public class ProfitCalculationService {
                 continue;
             }
 
-            String monthKey = MonthColumnResolver.normalizeMonthKey(monthRaw);
-
             BigDecimal pspTotal = BigDecimal.ZERO;
             BigDecimal stdTotal = BigDecimal.ZERO;
             BigDecimal hwRevenue = BigDecimal.ZERO;
-            BigDecimal hwBeforeSum = BigDecimal.ZERO;
-            BigDecimal hwAfterSum = BigDecimal.ZERO;
+            BigDecimal serverHwBeforeSum = BigDecimal.ZERO;
+            BigDecimal serverHwAfterSum = BigDecimal.ZERO;
             BigDecimal swBeforeSum = BigDecimal.ZERO;
             BigDecimal swAfterSum = BigDecimal.ZERO;
+            BigDecimal softwareGrossProfitSum = null;
 
             for (DetailRow d : lines) {
                 String cat = d.getCategoryType();
                 int qty = d.getDeviceCount() == null ? 0 : d.getDeviceCount();
                 BigDecimal q = BigDecimal.valueOf(qty);
+
                 if (isSoftware(cat)) {
                     swBeforeSum = swBeforeSum.add(nz(d.getBeforeTotalPrice()));
                     swAfterSum = swAfterSum.add(nz(d.getAfterTotalPrice()));
-                } else if (isHardware(cat)) {
+                    if (d.getGrossProfit() != null) {
+                        if (softwareGrossProfitSum == null) {
+                            softwareGrossProfitSum = BigDecimal.ZERO;
+                        }
+                        softwareGrossProfitSum = softwareGrossProfitSum.add(d.getGrossProfit());
+                    }
+                }
+
+                if (isServerHardware(cat, d.getHardwareType())) {
+                    String monthKey = MonthColumnResolver.normalizeMonthKey(d.getIncomeMonth());
                     BigDecimal unitPsp = BigDecimal.ZERO;
                     BigDecimal unitStd = BigDecimal.ZERO;
-                    if (monthKey != null && d.getDeviceId() != null) {
+                    if (d.getDeviceId() != null) {
                         CostRow cr = costs.get(d.getDeviceId());
                         unitPsp = productCostDao.getPspMonth(cr, monthKey);
                         unitStd = productCostDao.getStdMonth(cr, monthKey);
@@ -100,10 +112,8 @@ public class ProfitCalculationService {
                     stdTotal = stdTotal.add(unitStd.multiply(q));
                     BigDecimal ap = nz(d.getAfterPrice());
                     hwRevenue = hwRevenue.add(ap.multiply(q));
-                    hwBeforeSum = hwBeforeSum.add(nz(d.getBeforeTotalPrice()));
-                    hwAfterSum = hwAfterSum.add(nz(d.getAfterTotalPrice()));
-                } else if (cat != null && !cat.trim().isEmpty()) {
-                    log.debug("未识别软硬件分类: {} orderId={} lineId={}", cat, orderId, d.getId());
+                    serverHwBeforeSum = serverHwBeforeSum.add(nz(d.getBeforeTotalPrice()));
+                    serverHwAfterSum = serverHwAfterSum.add(nz(d.getAfterTotalPrice()));
                 }
             }
 
@@ -116,7 +126,13 @@ public class ProfitCalculationService {
                         .setScale(4, RoundingMode.HALF_UP);
             }
 
-            BigDecimal totalPriceIncrease = hwAfterSum.subtract(hwBeforeSum);
+            BigDecimal totalPriceIncrease = serverHwAfterSum.subtract(serverHwBeforeSum);
+            BigDecimal priceIncreaseRate = null;
+            if (serverHwBeforeSum.compareTo(BigDecimal.ZERO) > 0) {
+                priceIncreaseRate = serverHwAfterSum.subtract(serverHwBeforeSum)
+                        .divide(serverHwBeforeSum, 8, RoundingMode.HALF_UP)
+                        .setScale(4, RoundingMode.HALF_UP);
+            }
             BigDecimal swRate = null;
             if (swBeforeSum.compareTo(BigDecimal.ZERO) > 0) {
                 swRate = BigDecimal.ONE.subtract(swAfterSum.divide(swBeforeSum, 8, RoundingMode.HALF_UP))
@@ -126,19 +142,21 @@ public class ProfitCalculationService {
             SummaryRow s = new SummaryRow();
             s.setTaskId(taskId);
             s.setOrderId(orderId);
-            s.setIncomeMonth(monthRaw.isEmpty() ? "-" : monthRaw);
+            s.setIncomeMonth(AGGREGATE_INCOME_MONTH_PLACEHOLDER);
             s.setArea(order.getArea());
             s.setRepresentativeOffice(order.getRepresentativeOffice());
             s.setCountry(order.getCountry());
             s.setAccounts(order.getAccounts());
             s.setProject(order.getProject());
             s.setPoId(order.getPoId());
-            s.setGrossProfit(order.getGrossProfit());
+            s.setProductDomain(order.getProductDomain());
+            s.setGrossProfit(softwareGrossProfitSum);
             s.setHwPspGrossProfit(hwPspGp);
             s.setHwStandardGrossProfit(hwStdGp);
-            s.setBeforeTotalPrice(hwBeforeSum);
-            s.setAfterTotalPrice(hwAfterSum);
+            s.setBeforeTotalPrice(serverHwBeforeSum);
+            s.setAfterTotalPrice(serverHwAfterSum);
             s.setTotalPriceIncrease(totalPriceIncrease);
+            s.setPriceIncreaseRate(priceIncreaseRate);
             s.setSoftwareHistoryPrice(swBeforeSum);
             s.setSoftwarePrice(swAfterSum);
             s.setSoftwarePriceIncreaseRate(swRate);
@@ -164,6 +182,19 @@ public class ProfitCalculationService {
         }
         String t = categoryType.trim();
         return t.contains("软件") && !t.contains("硬件");
+    }
+
+    /**
+     * 软硬件分类为硬件且硬件类型为「服务器」的行，参与 PSP/标准成本、硬件总收入及服务器提价前后总价汇算。
+     */
+    private static boolean isServerHardware(String categoryType, String hardwareType) {
+        if (!isHardware(categoryType)) {
+            return false;
+        }
+        if (hardwareType == null) {
+            return false;
+        }
+        return hardwareType.trim().contains("服务器");
     }
 
     private static BigDecimal nz(BigDecimal v) {

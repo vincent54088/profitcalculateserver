@@ -26,6 +26,7 @@ CREATE TABLE IF NOT EXISTS t_order_product_detail_data (
     after_total_price DECIMAL(12,2),
     total_price_increase DECIMAL(12,2),
     total_increase_rate DECIMAL(7,4),
+    gross_profit DECIMAL(12,2),
     addition_info TEXT,
     CONSTRAINT fk_detail_task FOREIGN KEY (task_id) REFERENCES t_profit_calculation_task(task_id) ON DELETE CASCADE,
     CONSTRAINT fk_detail_order FOREIGN KEY (task_id, order_id) REFERENCES t_order_info(task_id, order_id) ON DELETE CASCADE,

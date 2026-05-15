@@ -18,8 +18,8 @@ import java.util.List;
 public class SummaryExportService {
 
     private static final List<String> EXPORT_HEADERS = Arrays.asList(
-            "合同号", "区域", "代表处", "国家", "客户群", "项目", "PO号", "销毛",
-            "收入确定时间", "硬件PSP制毛", "硬件标准口径制毛", "提价前总价格", "提价后总价格", "价格上涨",
+            "合同号", "区域", "代表处", "国家", "客户群", "项目", "PO号", "产品领域", "销毛",
+            "收入确定时间", "硬件PSP制毛", "硬件标准口径制毛", "提价前总价格", "提价后总价格", "价格上涨", "价格涨幅",
             "软件历史价格", "本次软件价格", "软件价格变化");
 
     private final SummaryReportDao summaryReportDao;
@@ -49,6 +49,7 @@ public class SummaryExportService {
                 xr.createCell(c++).setCellValue(nz(row.getAccounts()));
                 xr.createCell(c++).setCellValue(nz(row.getProject()));
                 xr.createCell(c++).setCellValue(nz(row.getPoId()));
+                xr.createCell(c++).setCellValue(nz(row.getProductDomain()));
                 setNum(xr.createCell(c++), row.getGrossProfit());
                 xr.createCell(c++).setCellValue(nz(row.getIncomeMonth()));
                 setNum(xr.createCell(c++), row.getHwPspGrossProfit());
@@ -56,6 +57,7 @@ public class SummaryExportService {
                 setNum(xr.createCell(c++), row.getBeforeTotalPrice());
                 setNum(xr.createCell(c++), row.getAfterTotalPrice());
                 setNum(xr.createCell(c++), row.getTotalPriceIncrease());
+                setNum(xr.createCell(c++), row.getPriceIncreaseRate());
                 setNum(xr.createCell(c++), row.getSoftwareHistoryPrice());
                 setNum(xr.createCell(c++), row.getSoftwarePrice());
                 setNum(xr.createCell(c++), row.getSoftwarePriceIncreaseRate());

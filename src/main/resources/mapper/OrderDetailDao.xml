@@ -30,6 +30,7 @@
         <result column="after_total_price" property="afterTotalPrice"/>
         <result column="total_price_increase" property="totalPriceIncrease"/>
         <result column="total_increase_rate" property="totalIncreaseRate"/>
+        <result column="gross_profit" property="grossProfit"/>
         <result column="addition_info" property="additionInfo"/>
     </resultMap>
 
@@ -40,7 +41,7 @@
         <result column="accounts" property="accounts"/>
         <result column="project" property="project"/>
         <result column="po_id" property="poId"/>
-        <result column="gross_profit" property="grossProfit"/>
+        <result column="product_domain" property="productDomain"/>
     </resultMap>
 
     <insert id="batchInsert">
@@ -48,14 +49,14 @@
             id, task_id, order_id, device_type, device_id, description, category_type, hardware_type, scene, device_count, income_month, currency,
             list_price, before_tier, before_price, discount_desc_before, after_tier, after_price, discount_desc_after,
             tier_increase, price_increase, after_tier_discount_rate, after_price_discount_rate, before_total_price, after_total_price,
-            total_price_increase, total_increase_rate, addition_info
+            total_price_increase, total_increase_rate, gross_profit, addition_info
         ) VALUES
         <foreach collection="rows" item="r" separator=",">
             (
             #{r.id}, #{r.taskId}, #{r.orderId}, #{r.deviceType}, #{r.deviceId}, #{r.description}, #{r.categoryType}, #{r.hardwareType}, #{r.scene},
             #{r.deviceCount}, #{r.incomeMonth}, #{r.currency}, #{r.listPrice}, #{r.beforeTier}, #{r.beforePrice}, #{r.discountDescBefore},
             #{r.afterTier}, #{r.afterPrice}, #{r.discountDescAfter}, #{r.tierIncrease}, #{r.priceIncrease}, #{r.afterTierDiscountRate},
-            #{r.afterPriceDiscountRate}, #{r.beforeTotalPrice}, #{r.afterTotalPrice}, #{r.totalPriceIncrease}, #{r.totalIncreaseRate}, #{r.additionInfo}
+            #{r.afterPriceDiscountRate}, #{r.beforeTotalPrice}, #{r.afterTotalPrice}, #{r.totalPriceIncrease}, #{r.totalIncreaseRate}, #{r.grossProfit}, #{r.additionInfo}
             )
         </foreach>
     </insert>
@@ -81,10 +82,12 @@
             OR IFNULL(o.accounts, '') LIKE CONCAT('%', #{keyword}, '%')
             OR IFNULL(o.project, '') LIKE CONCAT('%', #{keyword}, '%')
             OR IFNULL(o.po_id, '') LIKE CONCAT('%', #{keyword}, '%')
+            OR IFNULL(o.product_domain, '') LIKE CONCAT('%', #{keyword}, '%')
             OR CAST(IFNULL(d.device_count, 0) AS CHAR) LIKE CONCAT('%', #{keyword}, '%')
             OR CAST(IFNULL(d.list_price, 0) AS CHAR) LIKE CONCAT('%', #{keyword}, '%')
             OR CAST(IFNULL(d.before_price, 0) AS CHAR) LIKE CONCAT('%', #{keyword}, '%')
             OR CAST(IFNULL(d.after_price, 0) AS CHAR) LIKE CONCAT('%', #{keyword}, '%')
+            OR CAST(IFNULL(d.gross_profit, 0) AS CHAR) LIKE CONCAT('%', #{keyword}, '%')
             )
         </if>
     </sql>
@@ -97,6 +100,7 @@
         <bind name="_accounts" value="columnFilters == null ? null : columnFilters.get('accounts')"/>
         <bind name="_project" value="columnFilters == null ? null : columnFilters.get('project')"/>
         <bind name="_poId" value="columnFilters == null ? null : columnFilters.get('poId')"/>
+        <bind name="_productDomain" value="columnFilters == null ? null : columnFilters.get('productDomain')"/>
         <bind name="_grossProfit" value="columnFilters == null ? null : columnFilters.get('grossProfit')"/>
         <bind name="_deviceType" value="columnFilters == null ? null : columnFilters.get('deviceType')"/>
         <bind name="_deviceId" value="columnFilters == null ? null : columnFilters.get('deviceId')"/>
@@ -177,10 +181,17 @@
             </foreach>
             )
         </if>
+        <if test="_productDomain != null and _productDomain.size() &gt; 0">
+            AND (
+            <foreach item="v" collection="_productDomain" separator=" OR ">
+                IFNULL(o.product_domain, '') = #{v}
+            </foreach>
+            )
+        </if>
         <if test="_grossProfit != null and _grossProfit.size() &gt; 0">
             AND (
             <foreach item="v" collection="_grossProfit" separator=" OR ">
-                CAST(IFNULL(o.gross_profit, 0) AS CHAR) = #{v}
+                CAST(IFNULL(d.gross_profit, 0) AS CHAR) = #{v}
             </foreach>
             )
         </if>
@@ -389,7 +400,8 @@
             <when test="field == 'accounts'">IFNULL(o.accounts, '')</when>
             <when test="field == 'project'">IFNULL(o.project, '')</when>
             <when test="field == 'poId'">IFNULL(o.po_id, '')</when>
-            <when test="field == 'grossProfit'">CAST(IFNULL(o.gross_profit, 0) AS CHAR)</when>
+            <when test="field == 'productDomain'">IFNULL(o.product_domain, '')</when>
+            <when test="field == 'grossProfit'">CAST(IFNULL(d.gross_profit, 0) AS CHAR)</when>
             <when test="field == 'deviceType'">IFNULL(d.device_type, '')</when>
             <when test="field == 'deviceId'">IFNULL(d.device_id, '')</when>
             <when test="field == 'description'">IFNULL(d.description, '')</when>
@@ -434,7 +446,7 @@
                o.accounts,
                o.project,
                o.po_id,
-               o.gross_profit
+               o.product_domain
         FROM t_order_product_detail_data d
         LEFT JOIN t_order_info o ON d.task_id = o.task_id AND d.order_id = o.order_id
         WHERE d.task_id = #{taskId}
@@ -463,7 +475,7 @@
             after_tier = #{afterTier}, after_price = #{afterPrice}, discount_desc_after = #{discountDescAfter},
             tier_increase = #{tierIncrease}, price_increase = #{priceIncrease}, after_tier_discount_rate = #{afterTierDiscountRate},
             after_price_discount_rate = #{afterPriceDiscountRate}, before_total_price = #{beforeTotalPrice}, after_total_price = #{afterTotalPrice},
-            total_price_increase = #{totalPriceIncrease}, total_increase_rate = #{totalIncreaseRate}, addition_info = #{additionInfo}
+            total_price_increase = #{totalPriceIncrease}, total_increase_rate = #{totalIncreaseRate}, gross_profit = #{grossProfit}, addition_info = #{additionInfo}
         WHERE id = #{id} AND task_id = #{taskId}
     </update>
 

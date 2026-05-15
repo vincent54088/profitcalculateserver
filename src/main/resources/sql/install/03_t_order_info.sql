@@ -7,7 +7,7 @@ CREATE TABLE IF NOT EXISTS t_order_info (
     accounts VARCHAR(64),
     project VARCHAR(64),
     po_id VARCHAR(255),
-    gross_profit DECIMAL(12,2),
+    product_domain VARCHAR(64),
     PRIMARY KEY (task_id, order_id),
     CONSTRAINT fk_order_task FOREIGN KEY (task_id) REFERENCES t_profit_calculation_task(task_id) ON DELETE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;

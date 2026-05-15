@@ -57,6 +57,7 @@ public final class DetailMerge {
         copyDecimal(patch.getAfterTotalPrice(), existing::setAfterTotalPrice);
         copyDecimal(patch.getTotalPriceIncrease(), existing::setTotalPriceIncrease);
         copyDecimal(patch.getTotalIncreaseRate(), existing::setTotalIncreaseRate);
+        copyDecimal(patch.getGrossProfit(), existing::setGrossProfit);
         if (patch.getAdditionInfo() != null) {
             existing.setAdditionInfo(patch.getAdditionInfo());
         }

@@ -21,7 +21,7 @@
     />
 
     <el-dialog v-model="dlg" title="上传成本 Excel" width="520px" align-center destroy-on-close>
-      <el-upload drag :auto-upload="false" :limit="1" :on-change="onFile">
+      <el-upload class="cost-page__upload-dialog-zone" drag :auto-upload="false" :limit="1" :on-change="onFile">
         <div>拖拽文件到此处，或点击选择</div>
       </el-upload>
       <template #footer>
@@ -431,5 +431,22 @@ onMounted(() => {
 
 .cost-edit-form {
   padding-right: 8px;
+}
+
+/* 成本更新弹窗：黄色底仅落在虚线拖拽框内，与边框范围一致 */
+.cost-page__upload-dialog-zone :deep(.el-upload) {
+  display: block;
+  width: 100%;
+}
+
+.cost-page__upload-dialog-zone :deep(.el-upload-dragger) {
+  width: 100%;
+  box-sizing: border-box;
+  background-color: #fff9c4;
+  border-color: #fbc02d;
+}
+
+.cost-page__upload-dialog-zone :deep(.el-upload-dragger:hover) {
+  border-color: #f9a825;
 }
 </style>
