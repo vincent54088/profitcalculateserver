@@ -4,12 +4,15 @@ import com.huawei.tool.config.AppProperties;
 import com.huawei.tool.constant.TaskStatus;
 import com.huawei.tool.dao.TaskDao;
 import com.huawei.tool.dao.model.TaskRow;
+import com.huawei.tool.util.UploadFilenameHelper;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
+import java.io.InputStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.nio.file.StandardCopyOption;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -35,25 +38,22 @@ public class TaskManageService {
         if (file.isEmpty()) {
             throw new IllegalArgumentException("文件为空");
         }
-        String original = file.getOriginalFilename();
+        String original = UploadFilenameHelper.decodeOriginalFilename(file.getOriginalFilename());
         if (original == null || (!original.toLowerCase().endsWith(".xlsx") && !original.toLowerCase().endsWith(".xls"))) {
             throw new IllegalArgumentException("仅支持 .xlsx / .xls");
         }
         String taskId = UUID.randomUUID().toString().replace("-", "");
         Path dir = Paths.get(appProperties.getUploadDir(), taskId);
         Files.createDirectories(dir);
-        String safeName = Paths.get(original).getFileName().toString().replace("..", "_");
-        Path dest = dir.resolve(safeName);
-        file.transferTo(dest.toFile());
-
-        int dot = safeName.lastIndexOf('.');
-        String taskName = null;
-        if (dot > 0) {
-            taskName = safeName.substring(0, dot);
-        } else {
-            taskName = safeName;
+        String displayName = UploadFilenameHelper.displayFileName(original);
+        String storageName = UploadFilenameHelper.storageFileName(original);
+        Path dest = dir.resolve(storageName);
+        try (InputStream in = file.getInputStream()) {
+            Files.copy(in, dest, StandardCopyOption.REPLACE_EXISTING);
         }
-        taskDao.insert(taskId, taskName, TaskStatus.PARSING, safeName);
+
+        String taskName = UploadFilenameHelper.taskNameFromFile(displayName);
+        taskDao.insert(taskId, taskName, TaskStatus.PARSING, displayName);
         taskApplicationService.processOrderUploadAsync(taskId, dest);
 
         Map<String, Object> m = new HashMap<>();

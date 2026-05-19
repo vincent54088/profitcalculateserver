@@ -9,9 +9,9 @@ spring:
       max-file-size: 100MB
       max-request-size: 105MB
   datasource:
-    url: "jdbc:mysql://127.0.0.1:3306/profitcalculationtool?useUnicode=true&characterEncoding=UTF-8&serverTimezone=Asia/Shanghai&useSSL=false&allowPublicKeyRetrieval=true"
-    username: "******"
-    password: "******"
+    url: "jdbc:mysql://127.0.0.1:3306/agenteval?useUnicode=true&characterEncoding=UTF-8&serverTimezone=Asia/Shanghai&useSSL=false&allowPublicKeyRetrieval=true"
+    username: root
+    password: "huawei12!@"
     driver-class-name: com.mysql.cj.jdbc.Driver
     hikari:
       maximum-pool-size: 20
@@ -20,6 +20,13 @@ spring:
 
 server:
   port: 8080
+  servlet:
+    encoding:
+      charset: UTF-8
+      enabled: true
+      force: true
+  tomcat:
+    uri-encoding: UTF-8
 
 app:
   upload-dir: ./uploads
