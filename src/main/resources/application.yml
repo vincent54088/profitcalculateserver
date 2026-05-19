@@ -10,8 +10,8 @@ spring:
       max-request-size: 105MB
   datasource:
     url: "jdbc:mysql://127.0.0.1:3306/agenteval?useUnicode=true&characterEncoding=UTF-8&serverTimezone=Asia/Shanghai&useSSL=false&allowPublicKeyRetrieval=true"
-    username: root
-    password: "huawei12!@"
+    username: "******"
+    password: "******"
     driver-class-name: com.mysql.cj.jdbc.Driver
     hikari:
       maximum-pool-size: 20
